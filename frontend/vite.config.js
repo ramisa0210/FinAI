@@ -6,16 +6,14 @@ export default defineConfig({
   server: {
     port: 5173,
     strictPort: true,
-    https: false, // keep false unless you're testing HTTPS locally
-    proxy: {
-      '/api': {
-        target: process.env.VITE_BACKEND_URL || 'http://localhost:5000',
-        changeOrigin: true,
-        secure: false,
-      },
-    },
+    https: false,
+    // No proxy needed for production deployment
   },
   build: {
-    chunkSizeWarningLimit: 1000, // ⚡ prevents large chunk warning
+    chunkSizeWarningLimit: 1000,
   },
+  define: {
+    // ensure the backend URL is replaced at build time
+    'process.env.VITE_BACKEND_URL': JSON.stringify(process.env.VITE_BACKEND_URL || 'https://finai-backend-l3ka.onrender.com')
+  }
 });
