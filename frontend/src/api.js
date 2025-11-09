@@ -1,9 +1,8 @@
 import axios from "axios";
 
-// ✅ Use your live backend URL
 const API = axios.create({
   baseURL: "https://finai-backend-l3ka.onrender.com/api",
-  withCredentials: true, // important for cookies/auth
+  withCredentials: true, 
 });
 
 export const fetchUsers = () => API.get("/users");
