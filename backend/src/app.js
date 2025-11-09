@@ -5,13 +5,12 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 
-// Import routes
+// Routes
 import userRoutes from './routes/users.js';
 import transactionRoutes from './routes/transactions.js';
 import reportRoutes from './routes/reports.js';
 import loanRoutes from './routes/loans.js';
 
-// Load environment variables
 dotenv.config();
 
 const app = express();
@@ -19,10 +18,9 @@ const app = express();
 // ===== Middleware =====
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || 'https://finai-frontend.onrender.com',
-    credentials: true, // ✅ allows cookies
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
+    origin: process.env.CLIENT_URL, // your frontend URL: https://finai-frontend.onrender.com
+    credentials: true,              // allow cookies
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
   })
 );
 
@@ -33,7 +31,7 @@ app.use(cookieParser());
 
 // ===== Rate Limiting =====
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000, // 15 min
+  windowMs: 15 * 60 * 1000, // 15 minutes
   max: 100,
   message: 'Too many requests, please try again later.',
 });
