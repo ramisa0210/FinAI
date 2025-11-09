@@ -1,10 +1,12 @@
 import axios from "axios";
 
+// ✅ Use your live backend URL
 const API = axios.create({
-  baseURL: import.meta.env.VITE_BACKEND_URL, 
-  withCredentials: true,                      
+  baseURL: "https://finai-backend-l3ka.onrender.com/api",
+  withCredentials: true, // important for cookies/auth
 });
 
 export const fetchUsers = () => API.get("/users");
-export const addUser = (userData) => API.post("/users/register", userData);
-export const loginUser = (userData) => API.post("/users/login", userData);
+export const addUser = (userData) => API.post("/users", userData);
+export const loginUser = (data) => API.post("/users/login", data);
+export const registerUser = (data) => API.post("/users/register", data);
