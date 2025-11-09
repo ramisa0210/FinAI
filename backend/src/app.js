@@ -1,12 +1,17 @@
-import express from "express";
-import cors from "cors";
-import cookieParser from "cookie-parser";
-import helmet from "helmet";
-import rateLimit from "express-rate-limit";
-import dotenv from "dotenv";
+import express from 'express';
+import cors from 'cors';
+import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
+import rateLimit from 'express-rate-limit';
+import dotenv from 'dotenv';
 
-import userRoutes from "./routes/users.js";
+// Import routes
+import userRoutes from './routes/users.js';
+import transactionRoutes from './routes/transactions.js';
+import reportRoutes from './routes/reports.js';
+import loanRoutes from './routes/loans.js';
 
+// Load environment variables
 dotenv.config();
 
 const app = express();
@@ -14,9 +19,10 @@ const app = express();
 // ===== Middleware =====
 app.use(
   cors({
-    origin: process.env.CLIENT_URL, // frontend URL
-    credentials: true,               // allow cookies
-    methods: ["GET", "POST", "PUT", "DELETE"],
+    origin: process.env.CLIENT_URL || 'https://finai-frontend.onrender.com',
+    credentials: true, // ✅ allows cookies
+    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
   })
 );
 
@@ -25,23 +31,28 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
+// ===== Rate Limiting =====
 const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
+  windowMs: 15 * 60 * 1000, // 15 min
   max: 100,
-  message: "Too many requests, please try again later.",
+  message: 'Too many requests, please try again later.',
 });
 app.use(limiter);
 
 // ===== Routes =====
-app.use("/api/users", userRoutes);
+app.use('/api/users', userRoutes);
+app.use('/api/transactions', transactionRoutes);
+app.use('/api/reports', reportRoutes);
+app.use('/api/loans', loanRoutes);
 
-// Health check
-app.get("/", (req, res) => {
-  res.send("🚀 FinAI Backend is running successfully on Render");
+// ===== Health Check =====
+app.get('/', (req, res) => {
+  res.send('🚀 FinAI Backend is running successfully on Render');
 });
 
+// ===== 404 Handler =====
 app.use((req, res) => {
-  res.status(404).json({ error: "Route not found" });
+  res.status(404).json({ error: 'Route not found' });
 });
 
 export default app;
