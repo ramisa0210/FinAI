@@ -6,14 +6,16 @@ export default defineConfig({
   server: {
     port: 5173,
     strictPort: true,
-    https: false, // Set true if using HTTPS locally
+    https: false, // keep false unless you're testing HTTPS locally
     proxy: {
-      // Forward API requests to backend
       '/api': {
-        target: process.env.VITE_BACKEND_URL, // e.g. https://finai-backend.onrender.com
+        target: process.env.VITE_BACKEND_URL || 'http://localhost:5000',
         changeOrigin: true,
-        secure: true, // true if backend uses https
+        secure: false,
       },
     },
+  },
+  build: {
+    chunkSizeWarningLimit: 1000, // ⚡ prevents large chunk warning
   },
 });
