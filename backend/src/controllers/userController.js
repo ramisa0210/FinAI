@@ -3,9 +3,8 @@ import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 
 // ===== Helper: Generate JWT =====
-const generateToken = (id) => {
-  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "1d" });
-};
+const generateToken = (id) =>
+  jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "1d" });
 
 // ===== Register User =====
 export const registerUser = async (req, res) => {
@@ -13,32 +12,25 @@ export const registerUser = async (req, res) => {
     const { name, email, password } = req.body;
 
     const userExists = await User.findOne({ email });
-    if (userExists) {
-      return res.status(400).json({ message: "User already exists" });
-    }
+    if (userExists) return res.status(400).json({ message: "User already exists" });
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    const user = await User.create({
-      name,
-      email,
-      password: hashedPassword,
-    });
+    const user = await User.create({ name, email, password: hashedPassword });
 
     const token = generateToken(user._id);
 
-    // ✅ Secure cookie for Render (cross-domain)
+    // ✅ Set secure cookie for cross-domain
     res.cookie("token", token, {
       httpOnly: true,
-      secure: true, // HTTPS only
-      sameSite: "None", // cross-origin allowed
-      path: "/", // ensure frontend can access from any route
+      secure: true,       // HTTPS only
+      sameSite: "None",   // allow cross-origin
+      path: "/",          // cookie accessible for all routes
       maxAge: 24 * 60 * 60 * 1000,
     });
 
     res.status(201).json({
       success: true,
-      message: "User registered successfully",
       _id: user._id,
       name: user.name,
       email: user.email,
@@ -56,21 +48,17 @@ export const loginUser = async (req, res) => {
     const { email, password } = req.body;
 
     const user = await User.findOne({ email });
-    if (!user) {
-      return res.status(401).json({ message: "Invalid credentials" });
-    }
+    if (!user) return res.status(401).json({ message: "Invalid credentials" });
 
     const isMatch = await bcrypt.compare(password, user.password);
-    if (!isMatch) {
-      return res.status(401).json({ message: "Invalid credentials" });
-    }
+    if (!isMatch) return res.status(401).json({ message: "Invalid credentials" });
 
     const token = generateToken(user._id);
 
-    // ✅ Set cookie for secure cross-domain
+    // ✅ Set secure cookie
     res.cookie("token", token, {
       httpOnly: true,
-      secure: true, // HTTPS only
+      secure: true,
       sameSite: "None",
       path: "/",
       maxAge: 24 * 60 * 60 * 1000,
@@ -78,7 +66,6 @@ export const loginUser = async (req, res) => {
 
     res.status(200).json({
       success: true,
-      message: "Login successful",
       _id: user._id,
       name: user.name,
       email: user.email,
@@ -109,15 +96,12 @@ export const updateUserProfile = async (req, res) => {
 
     user.name = req.body.name || user.name;
     user.email = req.body.email || user.email;
-    if (req.body.password) {
-      user.password = await bcrypt.hash(req.body.password, 10);
-    }
+    if (req.body.password) user.password = await bcrypt.hash(req.body.password, 10);
 
     const updatedUser = await user.save();
 
     res.json({
       success: true,
-      message: "Profile updated successfully",
       _id: updatedUser._id,
       name: updatedUser.name,
       email: updatedUser.email,
