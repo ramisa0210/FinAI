@@ -19,14 +19,17 @@ const app = express();
 // ===== Middleware =====
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || '*', // Allow frontend URL
-    credentials: true,
+    origin: process.env.CLIENT_URL, // Allow only frontend URL
+    credentials: true,              // Allow cookies
+    methods: ['GET', 'POST', 'PUT', 'DELETE'],
   })
 );
 app.use(helmet());
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
-app.use(cookieParser());
+app.use(
+  cookieParser(),
+);
 
 // ===== Rate Limiting =====
 const limiter = rateLimit({
