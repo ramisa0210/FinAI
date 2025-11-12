@@ -2,68 +2,77 @@ import User from "../models/userModel.js";
 import jwt from "jsonwebtoken";
 import bcrypt from "bcryptjs";
 
-// Helper: create JWT cookie
-const generateToken = (res, userId) => {
-  const token = jwt.sign({ userId }, process.env.JWT_SECRET, {
-    expiresIn: "7d",
-  });
+// ===== Helper: Generate JWT =====
+const generateToken = (id) => {
+  return jwt.sign({ id }, process.env.JWT_SECRET, { expiresIn: "1d" });
+};
 
-  res.cookie("jwt", token, {
+// Helper to set JWT cookie
+const setTokenCookie = (res, token) => {
+  res.cookie("token", token, {
     httpOnly: true,
-    secure: true,
-    sameSite: "None",
-    maxAge: 7 * 24 * 60 * 60 * 1000,
+    secure: true,         // requires HTTPS (Render provides HTTPS)
+    sameSite: "None",     // allow cross-site cookie
+    maxAge: 24 * 60 * 60 * 1000, // 1 day
   });
 };
 
-// Register
+// ===== Register User =====
 export const registerUser = async (req, res) => {
-  const { name, email, password } = req.body;
+  try {
+    const { name, email, password } = req.body;
 
-  const userExists = await User.findOne({ email });
-  if (userExists) return res.status(400).json({ message: "User already exists" });
+    const userExists = await User.findOne({ email });
+    if (userExists) {
+      return res.status(400).json({ message: "User already exists" });
+    }
 
-  const hashedPassword = await bcrypt.hash(password, 10);
-  const user = await User.create({ name, email, password: hashedPassword });
+    const hashedPassword = await bcrypt.hash(password, 10);
 
-  if (user) {
-    generateToken(res, user._id);
-    res.status(201).json({ _id: user._id, name: user.name, email: user.email });
-  } else {
-    res.status(400).json({ message: "Invalid user data" });
+    const user = await User.create({
+      name,
+      email,
+      password: hashedPassword,
+    });
+
+    const token = generateToken(user._id);
+    setTokenCookie(res, token);
+
+    res.status(201).json({
+      success: true,
+      message: "User registered successfully",
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+    });
+  } catch (error) {
+    console.error("Register Error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
 
-// Login
+// ===== Login User =====
 export const loginUser = async (req, res) => {
-  const { email, password } = req.body;
-  const user = await User.findOne({ email });
+  try {
+    const { email, password } = req.body;
+    const user = await User.findOne({ email });
+    if (!user) return res.status(400).json({ message: "Invalid credentials" });
 
-  if (user && (await bcrypt.compare(password, user.password))) {
-    generateToken(res, user._id);
-    res.json({ _id: user._id, name: user.name, email: user.email });
-  } else {
-    res.status(401).json({ message: "Invalid email or password" });
-  }
-};
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return res.status(400).json({ message: "Invalid credentials" });
 
-// Profile
-export const getUserProfile = async (req, res) => {
-  const user = await User.findById(req.user._id);
-  if (user) res.json({ name: user.name, email: user.email });
-  else res.status(404).json({ message: "User not found" });
-};
+    const token = generateToken(user._id);
+    setTokenCookie(res, token);
 
-// Update
-export const updateUserProfile = async (req, res) => {
-  const user = await User.findById(req.user._id);
-  if (user) {
-    user.name = req.body.name || user.name;
-    user.email = req.body.email || user.email;
-    if (req.body.password) user.password = await bcrypt.hash(req.body.password, 10);
-    const updatedUser = await user.save();
-    res.json({ name: updatedUser.name, email: updatedUser.email });
-  } else {
-    res.status(404).json({ message: "User not found" });
+    res.status(200).json({
+      success: true,
+      message: "Login successful",
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+    });
+  } catch (error) {
+    console.error("❌ Login Error:", error);
+    res.status(500).json({ message: "Server error" });
   }
 };
