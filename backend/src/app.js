@@ -5,50 +5,27 @@ import helmet from 'helmet';
 import rateLimit from 'express-rate-limit';
 import dotenv from 'dotenv';
 
-import userRoutes from './routes/users.js';
-import transactionRoutes from './routes/transactions.js';
-import reportRoutes from './routes/reports.js';
-import loanRoutes from './routes/loans.js';
-
+// Load env
 dotenv.config();
 
 const app = express();
 
-// ===== Middleware =====
-app.use(
-  cors({
-    origin: process.env.CLIENT_URL, // frontend URL
-    credentials: true,              // allow cookies
-    methods: ['GET', 'POST', 'PUT', 'DELETE'],
-  })
-);
-app.use(helmet());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+// parse cookies
 app.use(cookieParser());
 
-// ===== Rate Limiting =====
-const limiter = rateLimit({
-  windowMs: 15 * 60 * 1000,
-  max: 100,
-  message: 'Too many requests, please try again later.',
-});
-app.use(limiter);
+// CORS: allow the frontend origin (set CLIENT_URL in env) and allow credentials (cookies)
+const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3000";
 
-// ===== Routes =====
-app.use('/api/users', userRoutes);
-app.use('/api/transactions', transactionRoutes);
-app.use('/api/reports', reportRoutes);
-app.use('/api/loans', loanRoutes);
+app.use(cors({
+  origin: (origin, callback) => {
+    // allow requests with no origin (like curl or mobile)
+    if (!origin) return callback(null, true);
+    if (origin === CLIENT_URL) return callback(null, true);
+    return callback(new Error('CORS policy: This origin is not allowed'), false);
+  },
+  credentials: true,
+}));
 
-// Health check
-app.get('/', (req, res) => {
-  res.send('🚀 FinAI Backend is running');
-});
-
-// 404 handler
-app.use((req, res) => {
-  res.status(404).json({ error: 'Route not found' });
-});
-
-export default app;
+// rest of your middleware: helmet, rate limiter, bodyParser etc.
+app.use(express.json());
+// ... other app.use as needed
