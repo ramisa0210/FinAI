@@ -10,13 +10,14 @@ connectDB();
 
 const app = express();
 
+// Middleware
 app.use(express.json());
 app.use(cookieParser());
 
-// ✅ Allow frontend to talk to backend securely
+// ✅ Allow frontend (Render URL) and cookies
 app.use(
   cors({
-    origin: "https://finai-frontend.onrender.com",
+    origin: process.env.CLIENT_URL || "https://finai-frontend.onrender.com",
     credentials: true,
   })
 );
