@@ -14,7 +14,7 @@ const app = express();
 app.use(cookieParser());
 
 // CORS: allow the frontend origin (set CLIENT_URL in env) and allow credentials (cookies)
-const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:3000";
+const CLIENT_URL = process.env.CLIENT_URL || "http://localhost:5000";
 
 app.use(cors({
   origin: (origin, callback) => {
