@@ -1,25 +1,32 @@
-import dotenv from 'dotenv';
-import app from './app.js';
-import connectDB from './config/db.js';
-
-// Handle uncaught exceptions
-process.on('uncaughtException', (err) => {
-  console.error('❌ Uncaught Exception:', err);
-  process.exit(1);
-});
+import express from "express";
+import dotenv from "dotenv";
+import cookieParser from "cookie-parser";
+import cors from "cors";
+import connectDB from "./config/db.js";
+import userRoutes from "./routes/users.js";
 
 dotenv.config();
 connectDB();
 
+const app = express();
+
+app.use(express.json());
+app.use(cookieParser());
+
+// ✅ Allow frontend to talk to backend securely
+app.use(
+  cors({
+    origin: "https://finai-frontend.onrender.com",
+    credentials: true,
+  })
+);
+
+app.get("/", (req, res) => {
+  res.send("✅ FinAI Backend is running successfully!");
+});
+
+// Routes
+app.use("/api/users", userRoutes);
+
 const PORT = process.env.PORT || 5000;
-
-// Bind to 0.0.0.0 for Render
-const server = app.listen(PORT, '0.0.0.0', () => {
-  console.log(`🚀 FinAI Backend running on port ${PORT}`);
-});
-
-// Handle unhandled promise rejections
-process.on('unhandledRejection', (err) => {
-  console.error('⚠️ Unhandled Rejection:', err);
-  server.close(() => process.exit(1));
-});
+app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
