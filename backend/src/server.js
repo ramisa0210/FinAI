@@ -17,7 +17,7 @@ app.use(cookieParser());
 // ✅ Allow frontend (Render URL) and cookies
 app.use(
   cors({
-    origin: process.env.CLIENT_URL || "https://finai-frontend.onrender.com",
+    origin: process.env.FRONTEND_URL || "https://finai-frontend.onrender.com", // Updated here to match the .env variable name
     credentials: true,
   })
 );
