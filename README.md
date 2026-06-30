@@ -1,6 +1,6 @@
-##  Features & Page Specifications
+##  FinAI 
 
-FinAI is an AI-powered financial intelligence platform that helps businesses track financial performance, analyze cash flow, generate reports and make smarter financial decisions through interactive analytics and intelligent recommendations.
+FinAI is a financial intelligence platform that helps businesses track financial performance, analyze cash flow, generate reports and make smarter financial decisions through interactive analytics and intelligent recommendations.
 
 ---
 # 📸 Project Screenshots
